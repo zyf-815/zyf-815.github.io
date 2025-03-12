@@ -1,0 +1,252 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>扩散模型相关 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="扩散模型相关 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="可控生成 与 inpainting
+A Task is Worth One Word: Learning with Task Prompts for High-Quality Versatile Image Inpainting
+impai..." />
+    <meta name="keywords" content="2024总结" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              扩散模型相关
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-01-20
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://zyf-815.github.io/tag/dolbzKA-I7/" class="post-tag">
+                  # 2024总结
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="可控生成-与-inpainting">可控生成 与 inpainting</h1>
+<h2 id="a-task-is-worth-one-word-learning-with-task-prompts-for-high-quality-versatile-image-inpainting">A Task is Worth One Word: Learning with Task Prompts for High-Quality Versatile Image Inpainting</h2>
+<p>impainting既需要生成与文本匹配的内容，也需要符合背景。除此之外，impainting包含多种任务，如物体生成与删除。为了解决这些问题解决方法：设计了四种文本提示：</p>
+<ol>
+<li>文本提示 ：学习文本信息，训练过程中在mask区域生成物体</li>
+<li>上下文内容提示：学习上下文信号，训练过程根据上下文中填充mask区域</li>
+<li>文本与上下文平衡提示：文章发现过去的物体删除容易导致模型从上下文中复制粘贴而不是简单的删除物体，因此模型同时引入文本提示与上下文内容提示，要求模型进行权衡，既考虑物体的信息，也考虑上下文信息。</li>
+<li>形状提示：输入mask的精细程度对生成的影响较大，为了提示鲁棒性。要求模型在mask和上下文之间进行权衡，如果mask较为粗糙，需要考虑上下文；如果mask较为精细，尽可能考虑形状。<br>
+<img src="https://zyf-815.github.io/post-images/1737355153175.png" alt="" loading="lazy"></li>
+</ol>
+<h2 id="attentive-eraser-unleashing-diffusion-models-object-removal-potential-via-self-attention-redirection-guidance">Attentive Eraser: Unleashing Diffusion Model’s Object Removal Potential via Self-Attention Redirection Guidance</h2>
+<p>一种无需微调的内容移除扩散模型，为了解决这一问题，文章提出了两种策略：1. 注意力激活与抑制，增强模型前景对背景的注意力同时抑制前景对自身的注意力（使前景融于背景）以及背景对前景的注意力（保持背景不变）。为了防止模型对相似物体的依赖性提出了相似性抑制（防止模型对背景中相似内容进行复制，主要是通过降低相似性矩阵的方差进行实现）。2. 自注意力重定向引导，将由上述方案处理后的去噪网络看作是噪声预测的扰动，通过扰动引导采样过程，感觉类似于残差的设计。<br>
+<img src="https://zyf-815.github.io/post-images/1741055370442.jpeg" alt="" loading="lazy"></p>
+<h2 id="zone-zero-shot-instruction-guided-local-editing">ZONE: Zero-Shot Instruction-Guided Local Editing</h2>
+<p>模型根据指令输入选择编辑区域并实现inpainting，具体流程：</p>
+<ol>
+<li>获取编辑区域：文章发现指令引导的注意力机制会迫使注意力图共享相似的空间特征，表现出对编辑的感知特征。因此，作者利用InstructPix2Pix去噪模型的注意力图生成大致的编辑区域定位。</li>
+<li>利用现成的模型提取准确的分割区域，利用SAM根据第一阶段获取的区域生成细致的掩码，由于SAM会生成多个掩码，计算IOU选择最合适的。</li>
+<li>利用 FFT实现图层的融合。<br>
+<img src="https://zyf-815.github.io/post-images/1737360559543.png" alt="" loading="lazy"></li>
+</ol>
+<h2 id="smartmask-context-aware-high-fidelity-mask-generation-for-fine-grained-object-insertion-and-layout-control">SmartMask: Context Aware High-Fidelity Mask Generation for Fine-grained Object Insertion and Layout Control</h2>
+<p>文章主要解决如何针对粗糙的掩码进行 ipainting，既要生成对应文本的形状，也要保证背景一致，文章提出的方法还能够在不使用掩码的情况下在合适的地方生成图像。解决方法：通过语义分割将场景分为不同的图层，在训练过程中将一个图层作为预测。<br>
+<img src="https://zyf-815.github.io/post-images/1737347327165.png" alt="" loading="lazy"></p>
+<h2 id="smartbrush-text-and-shape-guided-object-inpainting-with-difiusion-model">Smartbrush: Text and shape guided object inpainting with difiusion model</h2>
+<p>过去的方法不能生成和精细的掩码相匹配的物体；且对于粗糙的掩码，不能生成与背景匹配的图像。基于此问题，文章提出：1. 只在图像的 mask 区域添加噪声 2. 对掩码区域设置不同程度的高斯模糊，即得到一系列不同程度的掩码 3. 输出图像时同时生成掩码<br>
+<img src="https://zyf-815.github.io/post-images/1737347596265.png" alt="" loading="lazy"></p>
+<h2 id="migcmulti-instance-generation-controller-for-text-to-image-synthesis">MIGC:Multi-Instance Generation Controller for Text-to-Image Synthesis</h2>
+<p>多实例生成，过去的多实例生成往往伴随着实例缺失，属性错误的问题，主要是因为 cross attention 步骤中的泄漏，本文利用分而治之的思想解决这一问题。即分别为每个实例单独生成，最后融合。<br>
+<img src="https://zyf-815.github.io/post-images/1737346863193.png" alt="" loading="lazy"></p>
+<h2 id="avid-any-length-video-inpainting-with-diffusion-mode">AVID: Any-Length Video Inpainting with Diffusion Mode</h2>
+<p>给定一个视频以及第一帧的掩码，根据prompt 进行impainting。文章提出的方法针对以下三个问题1.时间一致性 2. 不同结构的 paint 3. 不同时长的视频序列 提出解决方案。<br>
+<img src="https://zyf-815.github.io/post-images/1737347055706.png" alt="" loading="lazy"></p>
+<h1 id="数据集补充">数据集补充</h1>
+<h2 id="pose-augmentation-class-agnostic-object-pose-transformation-for-object-recognition">Pose Augmentation: Class-Agnostic Object Pose Transformation for Object Recognition</h2>
+<p>对于分类任务，不同的视角与姿态对于检测结果的影响较大。文章利用类不可知的方法（将物体特征进行解耦，分为类别特征与姿态特征）为每个物体生成不同姿态的图像（偏航角与俯仰角）</p>
+<h2 id="lake-red-camouflaged-images-generation-by-latent-background-knowledge-retrieval-augmented-diffusion">LAKE-RED: Camouflaged Images Generation by Latent Background Knowledge Retrieval-Augmented Diffusion</h2>
+<p>伪装物体和背景的纹理类似，因此可以利用前景以生成背景<br>
+<img src="https://zyf-815.github.io/post-images/1737337320269.png" alt="" loading="lazy"></p>
+<h2 id="diffusemix-label-preserving-data-augmentation-with-diffusion-models">DIFFUSEMIX: Label-Preserving Data Augmentation with Diffusion Models</h2>
+<p>之前的混合的增强方式可能忽略图像的重要部分或是引入歧义，本文利用扩散模型实现图像混合。<br>
+<img src="https://zyf-815.github.io/post-images/1737337191407.png" alt="" loading="lazy"></p>
+<h2 id="guiding-text-to-image-diffusion-model-towards-grounded-generation">Guiding Text-to-Image Diffusion Model Towards Grounded Generation</h2>
+<p>利用扩散模型同时生成图片和掩码。得益于扩散模型的表达能力，只需要少量的{image,mask,text}三元组对就可以让模型拥有生成 mask 的能力<br>
+<img src="https://zyf-815.github.io/post-images/1737336581344.png" alt="" loading="lazy"></p>
+<h2 id="datasetdm-synthesizing-data-with-perception-annotations-using-diffusion-models">DatasetDM: Synthesizing Data with Perception Annotations Using Diffusion Models</h2>
+<p>利用扩散模型同时生成图像和掩码，依据的原理：依靠扩散模型的优秀表达能够轻易训练解码器生成注释。<br>
+<img src="https://zyf-815.github.io/post-images/1737336155036.png" alt="" loading="lazy"></p>
+<h2 id="diffumask-synthesizing-images-with-pixel-level-annotations-for-semantic-segmentation-using-diffusion-models">DiffuMask: Synthesizing Images with Pixel-level Annotations for Semantic Segmentation Using Diffusion Models</h2>
+<p>利用扩散模型同时生成图像和掩码，基于扩散模型的attentionmap，文本和图像的注意力图表示了实例的大致位置。<br>
+<img src="https://zyf-815.github.io/post-images/1737336055107.png" alt="" loading="lazy"></p>
+<h2 id="stablerep-synthetic-images-from-text-to-image-models-make-strong-visual-representation-learners">StableRep: Synthetic Images from Text-to-Image Models Make Strong Visual Representation Learners</h2>
+<p>将生成图像应用于Clip的训练范式，同一文本生成的图像互为正样本进行训练作用，模型效果超过了真实数据集的训练结果。<br>
+<img src="https://zyf-815.github.io/post-images/1737335927056.png" alt="" loading="lazy"></p>
+<h2 id="dataset-enhancement-with-instance-level-augmentations">Dataset Enhancement with Instance-Level Augmentations</h2>
+<p>应用任务：检测、分割。利用扩散模型实现实例级的重新生成，且保留原始的注释。流程为：根据图片和GT估计图像级别的深度和边缘映射。注释被分解为每个对象的二进制掩码和类，它们共同构成了修复模型的条件。我们使用按深度排序的 alpha 混合将它们重新绘制为最终图像。<br>
+<img src="https://zyf-815.github.io/post-images/1737334883224.png" alt="" loading="lazy"></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%8F%AF%E6%8E%A7%E7%94%9F%E6%88%90-%E4%B8%8E-inpainting">可控生成 与 inpainting</a>
+<ul>
+<li><a href="#a-task-is-worth-one-word-learning-with-task-prompts-for-high-quality-versatile-image-inpainting">A Task is Worth One Word: Learning with Task Prompts for High-Quality Versatile Image Inpainting</a></li>
+<li><a href="#attentive-eraser-unleashing-diffusion-models-object-removal-potential-via-self-attention-redirection-guidance">Attentive Eraser: Unleashing Diffusion Model’s Object Removal Potential via Self-Attention Redirection Guidance</a></li>
+<li><a href="#zone-zero-shot-instruction-guided-local-editing">ZONE: Zero-Shot Instruction-Guided Local Editing</a></li>
+<li><a href="#smartmask-context-aware-high-fidelity-mask-generation-for-fine-grained-object-insertion-and-layout-control">SmartMask: Context Aware High-Fidelity Mask Generation for Fine-grained Object Insertion and Layout Control</a></li>
+<li><a href="#smartbrush-text-and-shape-guided-object-inpainting-with-difiusion-model">Smartbrush: Text and shape guided object inpainting with difiusion model</a></li>
+<li><a href="#migcmulti-instance-generation-controller-for-text-to-image-synthesis">MIGC:Multi-Instance Generation Controller for Text-to-Image Synthesis</a></li>
+<li><a href="#avid-any-length-video-inpainting-with-diffusion-mode">AVID: Any-Length Video Inpainting with Diffusion Mode</a></li>
+</ul>
+</li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E8%A1%A5%E5%85%85">数据集补充</a>
+<ul>
+<li><a href="#pose-augmentation-class-agnostic-object-pose-transformation-for-object-recognition">Pose Augmentation: Class-Agnostic Object Pose Transformation for Object Recognition</a></li>
+<li><a href="#lake-red-camouflaged-images-generation-by-latent-background-knowledge-retrieval-augmented-diffusion">LAKE-RED: Camouflaged Images Generation by Latent Background Knowledge Retrieval-Augmented Diffusion</a></li>
+<li><a href="#diffusemix-label-preserving-data-augmentation-with-diffusion-models">DIFFUSEMIX: Label-Preserving Data Augmentation with Diffusion Models</a></li>
+<li><a href="#guiding-text-to-image-diffusion-model-towards-grounded-generation">Guiding Text-to-Image Diffusion Model Towards Grounded Generation</a></li>
+<li><a href="#datasetdm-synthesizing-data-with-perception-annotations-using-diffusion-models">DatasetDM: Synthesizing Data with Perception Annotations Using Diffusion Models</a></li>
+<li><a href="#diffumask-synthesizing-images-with-pixel-level-annotations-for-semantic-segmentation-using-diffusion-models">DiffuMask: Synthesizing Images with Pixel-level Annotations for Semantic Segmentation Using Diffusion Models</a></li>
+<li><a href="#stablerep-synthetic-images-from-text-to-image-models-make-strong-visual-representation-learners">StableRep: Synthetic Images from Text-to-Image Models Make Strong Visual Representation Learners</a></li>
+<li><a href="#dataset-enhancement-with-instance-level-augmentations">Dataset Enhancement with Instance-Level Augmentations</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/yi-chang-jian-ce/">
+              <h3 class="post-title">
+                异常检测
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>通道交换与归一化 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="通道交换与归一化 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一些多模态的mamba方法通常引入通道交换来融合两个模态的特征。具体来说，将每个模态的特征按通道对半分开然后拼接。但是对于模态不平衡问题，简单的交换可能导致主导模态的信息丢失。因此，调研了一些有关通道交换的方法
+Deep Multimoda..." />
+    <meta name="keywords" content="方法记录" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              通道交换与归一化
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-01-09
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://zyf-815.github.io/tag/cAxssDaE81/" class="post-tag">
+                  # 方法记录
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>一些多模态的mamba方法通常引入通道交换来融合两个模态的特征。具体来说，将每个模态的特征按通道对半分开然后拼接。但是对于模态不平衡问题，简单的交换可能导致主导模态的信息丢失。因此，调研了一些有关通道交换的方法</p>
+<h1 id="deep-multimodal-fusion-by-channel-exchanging">Deep Multimodal Fusion by Channel Exchanging</h1>
+<p>通过Batch-Normalization的尺度因子衡量通道的重要性。但是这种方式可能存在两种问题：</p>
+<ol>
+<li>Batch-Normalization依赖于batchsize，需要较大的batchsize才能取得较好的效果</li>
+<li>这种通道融合方式要求不同模态的相同通道包含相似的特征，因此要求除了Batch-Normalization的网络共享。这会导致模型可能不能充分学习不同模态特有的特征<br>
+<img src="https://zyf-815.github.io/post-images/1736388232571.png" alt="" loading="lazy"></li>
+</ol>
+<h1 id="generalized-lightness-adaptation-with-channel-selective-normalization">Generalized Lightness Adaptation with Channel Selective Normalization</h1>
+<p>在归一化特征和非归一化特征之间进行通道的选择。归一化方法能够提取不变的特征表征（在本任务中能够得到光照不变的特征表达，增强模型在没见过的光照条件下的泛化性能）。但归一化方法会导致图片信息的损失。因此需要进行特征的选择。模型的目的即选择光照无关的通道进行特征归一化并替换原来的通道。<br>
+<img src="https://zyf-815.github.io/post-images/1736389080861.png" alt="" loading="lazy"></p>
+<h1 id="batch-normalization-和-layer-normalization">Batch-Normalization 和 Layer-Normalization</h1>
+<p>归一化公式： <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>x</mi><mo>^</mo></mover><mo>=</mo><mi>γ</mi><mo>⋅</mo><mfrac><mrow><mi>x</mi><mo>−</mo><mi>μ</mi></mrow><mi>δ</mi></mfrac><mo>+</mo><mi>β</mi></mrow><annotation encoding="application/x-tex">\hat{x} = \gamma \cdot \frac{x-\mu}{\delta} + \beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">x</span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.22222em;">^</span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.63889em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.05556em;">γ</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.199439em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.854439em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03785em;">δ</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="mbin mtight">−</span><span class="mord mathdefault mtight">μ</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.05278em;">β</span></span></span></span>，目的是为了使模型有效的训练，即使特征回到正态分布，适应激活函数的梯度。<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>γ</mi><mo separator="true">,</mo><mi>β</mi></mrow><annotation encoding="application/x-tex">\gamma, \beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.05556em;">γ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault" style="margin-right:0.05278em;">β</span></span></span></span>为了重新学习得到数据的分布以更好的适应训练。</p>
+<ul>
+<li>Batch-Normalization一般用于视觉任务，不同样本对同一通道的特征进行归一化，使模型能够横向比较同一特征的差异。</li>
+<li>Layer-Normalization一般用于自然语言任务，对同一样本不同特征进行比较，这是由于NLP任务不同样本间不需要比较，而同一样本内的不同特征存在上下文的因果关系。</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#deep-multimodal-fusion-by-channel-exchanging">Deep Multimodal Fusion by Channel Exchanging</a></li>
+<li><a href="#generalized-lightness-adaptation-with-channel-selective-normalization">Generalized Lightness Adaptation with Channel Selective Normalization</a></li>
+<li><a href="#batch-normalization-%E5%92%8C-layer-normalization">Batch-Normalization 和 Layer-Normalization</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/xian-xing-zhu-yi-li-yu-mamba/">
+              <h3 class="post-title">
+                Mamba与线性注意力
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

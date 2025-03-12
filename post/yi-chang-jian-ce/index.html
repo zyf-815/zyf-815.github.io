@@ -1,0 +1,313 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>异常检测 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="异常检测 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="无监督的训练方式
+训练集只包含了正常的场景，测试集包含异常场景。这类模型的追求在于，要求正常样本多样性，又要防止对异常样本的鲁棒性。即需要在二者之间达成平衡
+基于重构的方法
+Self-Distilled Masked Auto-Encode..." />
+    <meta name="keywords" content="2024总结" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              异常检测
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-01-19
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="https://zyf-815.github.io/tag/dolbzKA-I7/" class="post-tag">
+                  # 2024总结
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="无监督的训练方式">无监督的训练方式</h1>
+<p>训练集只包含了正常的场景，测试集包含异常场景。这类模型的追求在于，要求正常样本多样性，又要防止对异常样本的鲁棒性。即需要在二者之间达成平衡</p>
+<h2 id="基于重构的方法">基于重构的方法</h2>
+<h3 id="self-distilled-masked-auto-encoders-are-efficient-video-anomaly-detectors">Self-Distilled Masked Auto-Encoders are Efficient Video Anomaly Detectors</h3>
+<ul>
+<li>引入了一种基于运动梯度加权tokens的方法，出发点在于重构背景意义不大，主要重构运动的物体。<br>
+将教师解码器和学生解码器集成到我们的架构中</li>
+<li>为了解决异常样本与正常样本学习的平衡，文章提出了两种策略：1. 学生老师模型：老师模型具有较强的泛化能力，可能将部分异常样本归类为正常，因此，利用老师模型教导学生模型，减少学生模型的鲁棒性。2. 合成异常事件来增强训练，迫使模型在学习时忽略异常样本。即重构场景时，不重构异常。而额外引入了一个异常预测来分析异常<br>
+<img src="https://zyf-815.github.io/post-images/1737271897224.png" alt="" loading="lazy"></li>
+</ul>
+<h3 id="synthetic-temporal-anomaly-guided-end-to-end-video-anomaly-detection">Synthetic Temporal Anomaly Guided End-to-End Video Anomaly Detection</h3>
+<p>首次提出了利用生成异常的方法防止模型对异常的鲁棒性，文章发现视频的异常程度与速度紧密相关，因此通过跳帧的方法生成伪异常，在训练过程中，要求最小化正常样本的重构损失并最大化异常样本的重构损失。<br>
+<img src="https://zyf-815.github.io/post-images/1737274116410.png" alt="" loading="lazy"></p>
+<h3 id="multi-scale-video-anomaly-detection-by-multi-grained-spatio-temporal-representation-learning">Multi-Scale Video Anomaly Detection by Multi-Grained Spatio-Temporal Representation Learning</h3>
+<p>主要解决问题：设计了三个任务使模型具有如下能力：1. 视频片段中是否有丢失帧，模型能够检测大规模的异常；2. 如果视频片段不连续，定位丢失帧，模型能够检测小规模异常；3. 如果视频片段不连续，丢失帧的特征是怎样的，分离异常特征与正常特征。相当于构造了异常<br>
+<img src="https://zyf-815.github.io/post-images/1737278586441.png" alt="" loading="lazy"></p>
+<h3 id="dynamic-local-aggregation-network-with-adaptive-clusterer-for-anomaly-detection">Dynamic Local Aggregation Network with Adaptive Clusterer for Anomaly Detection</h3>
+<p>过去基于内存增强型AE的问题：1. 建立记忆库需要额外的内存空间 2. 固定数量的原型基于主观假设，忽略了数据特征的差异和多样性。因此，文章提出通过学习的方式聚合来自AE的高级特征，以获得更具代表性的原型，并且利用聚类的方式自适应的选择原型。<br>
+<img src="https://zyf-815.github.io/post-images/1737274378176.png" alt="" loading="lazy"></p>
+<h3 id="self-supervised-predictive-convolutional-attentive-block-for-anomaly-detection">Self-Supervised Predictive Convolutional Attentive Block for Anomaly Detection</h3>
+<p>提出了一个适合异常检测的卷积模块，利用周围区域预测中间区域的像素值。<br>
+<img src="https://zyf-815.github.io/post-images/1737277126535.png" alt="" loading="lazy"></p>
+<h3 id="dynamic-distinction-learning-adaptive-pseudo-anomalies-for-video-anomaly-detection">Dynamic Distinction Learning: Adaptive Pseudo Anomalies for Video Anomaly Detection</h3>
+<p>利用生成异常来减弱模型对异常的鲁棒性，异常的生成方式为为物体增加噪声，同时文章引入可学习的参数自适应的分配异常生成的比例。文章还提出了一个区分损失函数，要求模型能够从异常中恢复正常场景。<br>
+<img src="https://zyf-815.github.io/post-images/1737276894382.png" alt="" loading="lazy"></p>
+<h3 id="multimodal-motion-conditioned-diffusion-model-for-skeleton-based-video-anomaly-detection">Multimodal Motion Conditioned Diffusion Model for Skeleton-based Video Anomaly Detection</h3>
+<p>利用扩散模型重构人物的骨骼（不扩散外观），因此需要一个额外的姿态估计网络。模型主要由两部分组成</p>
+<ol>
+<li>condition生成，利用AE的方式</li>
+<li>扩散模型，通过随机平移骨骼的方式进行加噪<br>
+<img src="https://zyf-815.github.io/post-images/1737275823973.png" alt="" loading="lazy"></li>
+</ol>
+<h3 id="feature-prediction-diffusion-model-for-video-anomaly-detection">Feature Prediction Diffusion Model for Video Anomaly Detection</h3>
+<p>对于视频异常检测任务，既要考虑空间也要考虑时间。因此，文章设计了两个扩散模型，第一个扩散模型学习运动表示，第二个扩散模型将图像特征作为condition输入，生成外观良好的结果。<br>
+<img src="https://zyf-815.github.io/post-images/1737275159531.png" alt="" loading="lazy"></p>
+<h3 id="exploring-diffusion-models-for-unsupervised-video-anomaly-detection-和unsupervised-video-anomaly-detection-with-diffusion-models-conditioned-on-compact-motion-representations">Exploring Diffusion Models for Unsupervised Video Anomaly Detection 和Unsupervised Video Anomaly Detection with Diffusion Models Conditioned on Compact Motion Representations</h3>
+<p>探索了扩散模型在异常检测中的应用，对于扩散模型，文章采取的方法是重构特征。两篇文章的区别在于前篇直接利用扩散模型进行重构，而第二篇额外加入了一个运动提取模块作为状态输入。</p>
+<h2 id="基于预测下一帧的方法">基于预测下一帧的方法</h2>
+<h3 id="a-new-comprehensive-benchmark-for-semi-supervised-video-anomaly-detection-and-anticipation">A New Comprehensive Benchmark for Semi-supervised Video Anomaly Detection and Anticipation</h3>
+<p>提出了异常预测任务：根据当前帧与之前的帧，判断未来<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.0037em;">α</span></span></span></span>帧是否存在异常。模型包括一个前向和一个后向帧预测网络，前向网络基于观察到的帧一次性预测多个未来帧，而后向网络则根据前向网络生成的未来帧和部分观察到的帧逆向预测观察到的帧。动机：如果在前向预测中未来帧是异常的，那么预测的图像将不准确。当将不准确的图像作为后向帧预测模型的一部分输入时，输出帧与已观察到的地面真实帧之间也会有很大的误差。<br>
+<img src="https://zyf-815.github.io/post-images/1737274590784.png" alt="" loading="lazy"></p>
+<h3 id="video-anomaly-detection-with-spatio-temporal-dissociation">Video anomaly detection with spatio-temporal dissociation</h3>
+<p>同时结合了重构与预测的方法，输入为一个视频片段，重构一个视频帧，预测视频片段的光流变化，最后得到最后一帧。即重构过程中充分考虑运动与外观。除此之外，文章提出了一个基于方差的注意力网络，即通过方差（可以表示物体的运动）分配权重。文章还提出了一个聚类模块促使模型学习紧凑的表示，目的在于使分离异常与正常样本。<br>
+<img src="https://zyf-815.github.io/post-images/1737276356815.png" alt="" loading="lazy"></p>
+<h3 id="a-hybrid-video-anomaly-detection-framework-via-memory-augmented-flow-reconstruction-and-flow-guided-frame-prediction">A Hybrid Video Anomaly Detection Framework via Memory-Augmented Flow Reconstruction and Flow-Guided Frame Prediction</h3>
+<p>首先利用重构的方法生成光流，然后作为condition预测下一帧。<br>
+<img src="https://zyf-815.github.io/post-images/1737277273287.png" alt="" loading="lazy"></p>
+<h1 id="弱监督的训练方式">弱监督的训练方式</h1>
+<p>只有视频级的标注，缺少帧级别的标注</p>
+<h2 id="unbiased-multiple-instance-learning-for-weakly-supervised-video-anomaly-detection">Unbiased Multiple Instance Learning for Weakly Supervised Video Anomaly Detection</h2>
+<p>过去的方法将样本分为了自信集（自信为异常或正常）和模糊集（不太确定为异常或是正常），并仅仅利用自信集进行训练，这导致模型存在部分异常偏见使其在一些边缘条件上不能很好的进行识别，具体来说如下图所示，(a)检测器对烟雾存在偏见，因为仅含有烟雾的爆炸前片段也被赋予了较大的异常分数；(b检测器对剧烈运动背景存在偏见，而对细微的破坏行为，即真正的异常，不太敏感。因此本文充分利用了模糊样本，利用聚类分开，然后缩小类内距离，增加类间距离以消除偏差。<br>
+<img src="https://zyf-815.github.io/post-images/1737254640507.png" alt="" loading="lazy"><br>
+传统的方法利用预训练的网络<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>θ</mi></mrow><annotation encoding="application/x-tex">\theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">θ</span></span></span></span>提取片段特征，然后将正常视频中最异常的片段（即y = 0）预测为正常，将异常视频中最异常的片段（即y = 1）预测为异常，即构造了一个由自信集构成的监督学习，然而，异常视频中的部分片段并没有被利用，这导致模型不能准确的学习真正的异常分布，导致模型容易对异常产生偏见。本文的方法：</p>
+<ol>
+<li>构建自信集与模糊集，基于的假设为：对于明显的正常或异常片段，它们的预测往往会随着时间的推移迅速收敛到具有小预测方差的正常或异常。基于此，将训练集分为模糊集和自信集，对于自信集利用监督信号进行学习，而对于模糊集，利用无监督的方式进行区分。</li>
+<li>对于模糊集，通过特征分布可以反映正常和异常片段之间的内在差异，因此模型通过聚类生成伪标签，在训练过程中，要求相似特征（聚类为一类）对应的的预测相似<br>
+<img src="https://zyf-815.github.io/post-images/1737270305704.png" alt="" loading="lazy"><br>
+额外介绍bias和Variance：bias表示偏见，即模型预测是否准确，一般来说模型越简单bias越大，模型越复杂bias越小；variance表示方差，即模型预测之间的方差，一般来说模型越复杂，variance越大；一般来说模型越简单，variance越小。</li>
+</ol>
+<h2 id="delving-into-clip-latent-space-for-video-anomaly-recognition">Delving into CLIP latent space for Video Anomaly Recognition</h2>
+<p>提出了首个基于视觉语言大模型的视频异常识别任务，输入弱监督任务，输入为样本以及样本对应的类别（包括了异常的种类）。文章发现利用传统的Clip直接进行任务并不能取得较好的结果，因此提出了一个选择器模型以调整clip空间中的特征。另外，提出了一个基于transformer的时序模型。最终训练的要求为最大化异常与正常的特征。选择器模型(a)：文章利用均值构造了一个原型，文章认为特征与原型的距离大小反映了其异常性的可能性，而其方向则表示异常的类型。<br>
+<img src="https://zyf-815.github.io/post-images/1737273653242.png" alt="" loading="lazy"></p>
+<h2 id="cross-modal-fusion-and-attention-mechanism-for-weakly-supervised-video-anomaly-detection">Cross-Modal Fusion and Attention Mechanism for Weakly Supervised Video Anomaly Detection</h2>
+<p>利用音频与视频两种模态实现弱监督视频异常检测。主要解决如何融合音频与视频两种模态。在注意力机制的K，V前加入可学习的前缀来自适应的学习模态融合。</p>
+<h1 id="其他方式论文">其他方式论文：</h1>
+<h2 id="towards-interpretable-video-anomaly-detection">Towards Interpretable Video Anomaly Detection</h2>
+<p>过去的方法不可解释且依赖于人工筛选的数据（要求训练集没有异常），因此文章利用了两个辅助任务的预训练模型，提出了全局对象监测和局部对象监测两个模型</p>
+<ul>
+<li>Global：训练一个场景图模型，训练出对象和对象之间的关系最后输出与标准的语义距离</li>
+<li>Local：利用姿态估计模型提取姿态，通过重建姿态返回重建损失<br>
+<img src="https://zyf-815.github.io/post-images/1737277917838.png" alt="" loading="lazy"></li>
+</ul>
+<h2 id="harnessing-large-language-models-for-training-free-video-anomaly-detection">Harnessing Large Language Models for Training-free Video Anomaly Detection</h2>
+<p>主要思想：利用大语言模型实现Training-free的视频异常检测，工作流程：由字幕模型为每一帧生成字幕，然后利用图像文本对齐处理不正确的字幕，然后由LLM通过时间窗口处理字幕序列得到摘要和初始异常分数，最后结合摘要和图像细化异常分数<br>
+<img src="https://zyf-815.github.io/post-images/1737279017890.png" alt="" loading="lazy"></p>
+<h2 id="attribute-based-representations-for-accurate-and-interpretable-video-anomaly-detection">Attribute-based Representations for Accurate and Interpretable Video Anomaly Detection</h2>
+<p>通过速度、姿态估计以及深度特征进行异常检测，增强可解释性</p>
+<h1 id="异常检测评价指标auc">异常检测评价指标——AUC</h1>
+<h2 id="混淆矩阵">混淆矩阵</h2>
+<ul>
+<li>TP(True Positive)：样本预测值与真实值相符且均为正（正确的分类为阳性），即真阳性</li>
+<li>FP(False Positive)：样本预测值为正而真实值为负（错误的分类为阳性），即假阳性</li>
+<li>FN(False Negative)：样本预测值为负而真实值为正（错误的分类为阴性），即假阴性</li>
+<li>TN(True Negative)：样本预测值与真实值相符且均为负（正确的分类为阴性），即真阴性</li>
+</ul>
+<p>精确率 ： (TP+TN) / (TP + TN +FN + FP)<br>
+准确率 ： TP / (TP + FP) 在识别为正样本中，有多少为正样本<br>
+召回率 ： TP / (TP + FN) 在实际的正样本中，有多少被正确的检测<br>
+F-score ：准确率和召回率的平衡</p>
+<h2 id="roc曲线与auc">ROC曲线与AUC</h2>
+<p>横纵坐标分别为FPR和TPR。</p>
+<ul>
+<li>FPR = FP / (FP + TN)  负样本分错的概率</li>
+<li>TPR = FP / (FP + TN)  正样本分对的概率<br>
+ROC曲线即调整分类的阈值，绘制FPR和TPR的曲线。AUC为ROC曲线下的面积。</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E7%9A%84%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F">无监督的训练方式</a>
+<ul>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E9%87%8D%E6%9E%84%E7%9A%84%E6%96%B9%E6%B3%95">基于重构的方法</a>
+<ul>
+<li><a href="#self-distilled-masked-auto-encoders-are-efficient-video-anomaly-detectors">Self-Distilled Masked Auto-Encoders are Efficient Video Anomaly Detectors</a></li>
+<li><a href="#synthetic-temporal-anomaly-guided-end-to-end-video-anomaly-detection">Synthetic Temporal Anomaly Guided End-to-End Video Anomaly Detection</a></li>
+<li><a href="#multi-scale-video-anomaly-detection-by-multi-grained-spatio-temporal-representation-learning">Multi-Scale Video Anomaly Detection by Multi-Grained Spatio-Temporal Representation Learning</a></li>
+<li><a href="#dynamic-local-aggregation-network-with-adaptive-clusterer-for-anomaly-detection">Dynamic Local Aggregation Network with Adaptive Clusterer for Anomaly Detection</a></li>
+<li><a href="#self-supervised-predictive-convolutional-attentive-block-for-anomaly-detection">Self-Supervised Predictive Convolutional Attentive Block for Anomaly Detection</a></li>
+<li><a href="#dynamic-distinction-learning-adaptive-pseudo-anomalies-for-video-anomaly-detection">Dynamic Distinction Learning: Adaptive Pseudo Anomalies for Video Anomaly Detection</a></li>
+<li><a href="#multimodal-motion-conditioned-diffusion-model-for-skeleton-based-video-anomaly-detection">Multimodal Motion Conditioned Diffusion Model for Skeleton-based Video Anomaly Detection</a></li>
+<li><a href="#feature-prediction-diffusion-model-for-video-anomaly-detection">Feature Prediction Diffusion Model for Video Anomaly Detection</a></li>
+<li><a href="#exploring-diffusion-models-for-unsupervised-video-anomaly-detection-%E5%92%8Cunsupervised-video-anomaly-detection-with-diffusion-models-conditioned-on-compact-motion-representations">Exploring Diffusion Models for Unsupervised Video Anomaly Detection 和Unsupervised Video Anomaly Detection with Diffusion Models Conditioned on Compact Motion Representations</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA%E4%BA%8E%E9%A2%84%E6%B5%8B%E4%B8%8B%E4%B8%80%E5%B8%A7%E7%9A%84%E6%96%B9%E6%B3%95">基于预测下一帧的方法</a>
+<ul>
+<li><a href="#a-new-comprehensive-benchmark-for-semi-supervised-video-anomaly-detection-and-anticipation">A New Comprehensive Benchmark for Semi-supervised Video Anomaly Detection and Anticipation</a></li>
+<li><a href="#video-anomaly-detection-with-spatio-temporal-dissociation">Video anomaly detection with spatio-temporal dissociation</a></li>
+<li><a href="#a-hybrid-video-anomaly-detection-framework-via-memory-augmented-flow-reconstruction-and-flow-guided-frame-prediction">A Hybrid Video Anomaly Detection Framework via Memory-Augmented Flow Reconstruction and Flow-Guided Frame Prediction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%BC%B1%E7%9B%91%E7%9D%A3%E7%9A%84%E8%AE%AD%E7%BB%83%E6%96%B9%E5%BC%8F">弱监督的训练方式</a>
+<ul>
+<li><a href="#unbiased-multiple-instance-learning-for-weakly-supervised-video-anomaly-detection">Unbiased Multiple Instance Learning for Weakly Supervised Video Anomaly Detection</a></li>
+<li><a href="#delving-into-clip-latent-space-for-video-anomaly-recognition">Delving into CLIP latent space for Video Anomaly Recognition</a></li>
+<li><a href="#cross-modal-fusion-and-attention-mechanism-for-weakly-supervised-video-anomaly-detection">Cross-Modal Fusion and Attention Mechanism for Weakly Supervised Video Anomaly Detection</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%B6%E4%BB%96%E6%96%B9%E5%BC%8F%E8%AE%BA%E6%96%87">其他方式论文：</a>
+<ul>
+<li><a href="#towards-interpretable-video-anomaly-detection">Towards Interpretable Video Anomaly Detection</a></li>
+<li><a href="#harnessing-large-language-models-for-training-free-video-anomaly-detection">Harnessing Large Language Models for Training-free Video Anomaly Detection</a></li>
+<li><a href="#attribute-based-representations-for-accurate-and-interpretable-video-anomaly-detection">Attribute-based Representations for Accurate and Interpretable Video Anomaly Detection</a></li>
+</ul>
+</li>
+<li><a href="#%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E8%AF%84%E4%BB%B7%E6%8C%87%E6%A0%87auc">异常检测评价指标——AUC</a>
+<ul>
+<li><a href="#%E6%B7%B7%E6%B7%86%E7%9F%A9%E9%98%B5">混淆矩阵</a></li>
+<li><a href="#roc%E6%9B%B2%E7%BA%BF%E4%B8%8Eauc">ROC曲线与AUC</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/sam-xiang-guan-lun-wen/">
+              <h3 class="post-title">
+                VIT相关论文
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

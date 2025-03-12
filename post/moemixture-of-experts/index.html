@@ -1,0 +1,219 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoE（Mixture of Experts） | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="MoE（Mixture of Experts） | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="概述
+在大语言模型中，利用MoE层代替过去的FFN层，MoE层由多个FFN（专家）以及门控网络组成。其基本思想是利用不同的专家处理不同的输入数据。MoE的利用不仅扩大了模型规模同时能够利用更少的计算量实现更高的效果。MoE包括密集MoE和稀..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              MoE（Mixture of Experts）
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-03-04
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="概述">概述</h1>
+<p>在大语言模型中，利用MoE层代替过去的FFN层，MoE层由多个FFN（专家）以及门控网络组成。其基本思想是利用不同的专家处理不同的输入数据。MoE的利用不仅扩大了模型规模同时能够利用更少的计算量实现更高的效果。MoE包括密集MoE和稀疏MoE（如下图所示），目前最广为使用的为稀疏MoE，对于稀疏MoE，模型往往选择topK个专家进行激活，但容易在训练过程中导致负载均衡问题，即部分专家被频繁激活而部分专家得不到训练，为了解决这一问题，往往会设计辅助损失使专家均衡了处理一个batch中的token（分配给专家i的token比例乘以分配给专家i的门控概率的比例）<br>
+<img src="https://zyf-815.github.io/post-images/1741079319394.png" alt="" loading="lazy"></p>
+<h1 id="门控函数">门控函数</h1>
+<p>本章主要介绍了三种门控，包括稀疏门控，密集门控和soft门控。密集门控为每个输入过程激活所有专家。</p>
+<p>对于稀疏门控，包括1. Token-Choice Gating，如下图(a)所示，为每个token选择topK个专家进行激活。对于token-choice方法，需要考虑负载均衡问题，除了概述中提出的辅助损失函数（有的工作发现，这一损失无法适应大尺度的值，因此提出了一个惩罚项以减少大 logits），专家重要性损失（通过权重表示专家的重要性，该损失要求所有专家拥有相同的重要性），以及互信息损失（计算专家与token之间的互信息）。除了通过损失函数的方式，有的工作通过设计专家容量实现负载均衡，即对于超过的容量的token根据门控激活值随机选择专家。为了防止后面的token由于超出容量被抛弃，Batch Prioritized Routing (BPR)技术通过对门控分数进行排序以分配专家而不是顺序的选择。下图(b,e)介绍了其他的一些token-choice门控方法以解决负载均衡问题，(b)将token分配定义为线性分配问题，目标是最大化token与专家之间的亲和度，同时确保每个专家的负载均衡（线性规划/匈牙利算法）。(e)通过引入注意力来更好的捕获专家与token之间的关系。2. 不训练的Token-Choice Gating，这种方法不需要额外的门控参数，同时能够通过一定的策略实现负载均衡。例如通过哈希的方法随机分配专家；或是将不同的专家分配到离散的预训练领域，并使用域匹配来选择与训练输入相对应的专家；或是如下图(c)所示，将标记路由到特定领域的专家组，然后在该组中进行随机选择。这种不训练的门控选择策略往往还被用于多任务中以解决通才模型中任务干扰的问题。3. Expert-Choice Gating。专家选择的门控属于上述的逆版本，即每个专家选择他们将处理的前k个令牌，如下图(d)，这一方法避免了训练期间辅助负载平衡损失的必要性，确保了专家之间令牌的均匀分布。但容易导致有些令牌可能被多个专家处理，或者根本不处理，但这可能也是优点，即模型可以隐式地对某些标记应用更多的计算。</p>
+<p>对于soft的门控，同样激活了所有的专家，但区别于密集门控，soft门控利用合并专家或是token的方法减少了计算需求，token合并的方法，为所有token聚合了几个加权求和的值，并为每个聚合分配相应的专家进行处理。然而，合并输入标记使其在自回归解码器中的应用变得复杂，因为在推理过程中无法访问平均的未来标记。下图(f)展示了专家合并的方法，通过加权平均合并所有专家的参数来规避离散门控。<br>
+<img src="https://zyf-815.github.io/post-images/1741164659514.png" alt="" loading="lazy"></p>
+<h1 id="专家">专家</h1>
+<p>在MoE中，MoE层往往替代网络中的FFN网络，这是基于自注意力层比 FFN 层表现出更低的稀疏性和更少的域特异性，即大多数输入只激活一小部分FFN神经元，突出了FFN的固有稀疏性。并且部分工作的发现揭示了神经元激活和特定任务之间的显着相关性。同时也有部分工作改进了MoE中的专家架构，如下图(a)MoA，用Attention代替了FFN，MoA包含了两组专家，一组用于计算Query，一组用于计算Key和Value，并通过公共门控网络选择具有相同索引的专家。(b)展示了共享专家的思想，这类方法的主要思想是将稀疏MoE视作固定密集FFN的误差校正附件。<br>
+<img src="https://zyf-815.github.io/post-images/1741592052230.png" alt="" loading="lazy"></p>
+<p>超参数的选择，关键的超参数包括了专家数量，专家大小以及MoE层的替换频率。对于<strong>专家数量</strong>，早期的工作设计了上千的专家数量，但在领域迁移以及微调任务时，模型退化严重。实验结果发现64个专家并且选择top2的专家在效率与效果上取得了最好的平衡。金字塔结构的专家数量往往在网络的末尾设计较多的专家数量。<strong>专家网络的参数大小</strong>，目前工作往往在专家数量与参数大小上进行权衡，通过增加专家数量并增加激活的专家数以减少单个专家的参数两，这种设计认为可以改进专家之间知识的分解，促进了更精确的学习，而且还增强了专家激活组合的灵活性，允许更专业和有针对性的知识捕获。<strong>MoE层频率</strong>，目前的研究没有明确的表明MoE与FFN最佳的替换方法。</p>
+<h1 id="参数高效的专家混合模型">参数高效的专家混合模型</h1>
+<p>将大模型应用到下游任务的过程中，全参数微调的方法计算开销大，而PEFT（参数高效微调）方法只更新一小组参数，同时保持基本模型的其余部分不变。但由于可训练参数的范围有限和灾难性遗忘的潜力，PEFT 方法通常难以跨多个任务进行泛化。借助MoE和PEFT的方法，结合MoE在多任务场景上的泛化能力以及PEFT的微调效率。基于其在 Transformer 模型架构中的位置，模型分为如下图四类：</p>
+<ol>
+<li>FFN层，重点是优化参数高效的专家和门控机制并保持其他部分网络冻结。计算公式如下，<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Δ</mi><msubsup><mi>W</mi><mi>i</mi><mrow><mi>f</mi><mi>f</mi><mi>n</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">\Delta W_i^{ffn}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2438799999999999em;vertical-align:-0.276864em;"></span><span class="mord">Δ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9670159999999999em;"><span style="top:-2.4231360000000004em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.1809080000000005em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span></span></span></span>表示专家参数，$G^{ffn}(x')_i $表示门控函数。LoRAMoE 将LoRA专家集成到FFN层，并使用门控机制来表示专家的贡献，除此之外，其将专家分为两组，一组专注于学习各种下游任务，另一组用于保留学习到的通用知识并设计了一种平衡损失，用以解决知识遗忘问题。另外的方法将模型设计为两阶段的训练方法，第一阶段仅微调与FFN并行的域Adapter以获得特定领域的知识，同时保留世界知识。第二阶段， 在 FFN 层之上引入门控网络和任务Adapter，以根据特定的下游任务定制模型。</li>
+</ol>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mi>F</mi><msup><mi>N</mi><mrow><mi>M</mi><mi>o</mi><mi>E</mi></mrow></msup><mo>(</mo><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><mo>)</mo><mo>=</mo><mi>F</mi><mi>F</mi><mi>N</mi><mo>(</mo><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><mo>)</mo><mo>+</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><mi mathvariant="normal">Δ</mi><msubsup><mi>W</mi><mi>i</mi><mrow><mi>f</mi><mi>f</mi><mi>n</mi></mrow></msubsup><mo>⋅</mo><msup><mi>G</mi><mrow><mi>f</mi><mi>f</mi><mi>n</mi></mrow></msup><mo>(</mo><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><msub><mo>)</mo><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">FFN^{MoE}(x&#x27;) = FFN(x&#x27;) + \sum _{i=1}^{n} x&#x27; \Delta W_i^{ffn} \cdot G^{ffn}(x&#x27;)_i 
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1413309999999999em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913309999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">M</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight" style="margin-right:0.05764em;">E</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.051892em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mord">Δ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9670159999999998em;"><span style="top:-2.4231360000000004em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.180908em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.276864em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.149108em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.1130000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight" style="margin-right:0.10764em;">f</span><span class="mord mathdefault mtight">n</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<ol start="2">
+<li>Attention层，通过合并门控网络和一组并行专家来增强注意力机制。可以应用于查询、键、值和输出投影模块。可以单独增强也可以组合使用，公表示如下所示。在Attention上的MoPE可以分为两类，第一类如MoELoRA 将多个 LoRA 专家设置为注意力机制的 Query 和 Value 矩阵，并利用门控网络在训练和推理阶段激活与特定任务相关的前 k 个专家。为了保证每个专家学习不同的特征，通过对比学习突出专家之间输出分布的差异，从而鼓励它们捕获与下游任务相关的不同特征。第二类方法如MoCLE利用聚类方法将任务分为多类。然后将不同任务分配给不同任务的专家模型，除此之外还有一个通用专家以保持模型的通用性能。</li>
+</ol>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><msup><mi>A</mi><mrow><mi>M</mi><mi>o</mi><mi>E</mi></mrow></msup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>S</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo>(</mo><mfrac><mrow><mi>Q</mi><mo>(</mo><msup><mi>K</mi><mi>T</mi></msup><mo>+</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>x</mi><mi mathvariant="normal">Δ</mi><msubsup><mi>W</mi><mi>i</mi><mi>k</mi></msubsup><mo>⋅</mo><msup><mi>G</mi><mi>k</mi></msup><mo>(</mo><mi>x</mi><msub><mo>)</mo><mi>i</mi></msub><mo>)</mo><mo>)</mo></mrow><msqrt><msub><mi>d</mi><mrow><mi>h</mi><mi>e</mi><mi>a</mi><mi>d</mi></mrow></msub></msqrt></mfrac><mo>)</mo><mo>(</mo><mi>V</mi><mo>+</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>x</mi><mi mathvariant="normal">Δ</mi><msubsup><mi>W</mi><mi>i</mi><mi>v</mi></msubsup><mo>⋅</mo><msup><mi>G</mi><mi>v</mi></msup><mo>(</mo><mi>x</mi><msub><mo>)</mo><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">SA^{MoE}(x) = Softmax(\frac{Q(K^T + \sum _{i=1}^{n} x \Delta W_i^{k} \cdot G^{k}(x)_i ))}{\sqrt{d_{head}}})(V+\sum _{i=1}^{n} x \Delta W_i^{v} \cdot G^{v}(x)_i )
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1413309999999999em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913309999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">M</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight" style="margin-right:0.05764em;">E</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.468818em;vertical-align:-0.93em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord mathdefault">t</span><span class="mord mathdefault">m</span><span class="mord mathdefault">a</span><span class="mord mathdefault">x</span><span class="mopen">(</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.538818em;"><span style="top:-2.25278em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.85722em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathdefault">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">h</span><span class="mord mathdefault mtight">e</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.81722em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,
+-10,-9.5,-14c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54c44.2,-33.3,65.8,
+-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10s173,378,173,378c0.7,0,
+35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429c69,-144,104.5,-217.7,106.5,
+-221c5.3,-9.3,12,-14,20,-14H400000v40H845.2724s-225.272,467,-225.272,467
+s-235,486,-235,486c-2.7,4.7,-9,7,-19,7c-6,0,-10,-1,-12,-3s-194,-422,-194,-422
+s-65,47,-65,47z M834 80H400000v40H845z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.18278000000000005em;"><span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.6897100000000003em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">Q</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.804292em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">x</span><span class="mord">Δ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-2.441336em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.93em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.22222em;">V</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">x</span><span class="mord">Δ</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-2.4530000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<ol start="3">
+<li>Transformer Block，同时在FFN层以及Attention层利用了MoE</li>
+<li>every layer，将整个Transformer视作一个整体<br>
+<img src="https://zyf-815.github.io/post-images/1741597789700.png" alt="" loading="lazy"></li>
+</ol>
+<h1 id="训练与推理方案">训练与推理方案</h1>
+<p>下图展示了四种MoE训练与推理架构，原始架构构建了一个MoE模型并从头开始训练它。为了提升模型的训练效率与质量，目前共有三种变体：</p>
+<ol>
+<li>Dense-to-Sparse：先训练密集MoE在到稀疏MoE，(a)首先对所有专家密集激活，然后逐步自适应地将令牌路由到减少数量的专家。(b)复制FFN层初始化所有专家，然后仅仅训练MoE层而忽略其他模块。</li>
+<li>Sparse-to-Dense：目的是将大型的MoE模型蒸馏到密集模型，以在保留性能的基础上减少参数量。一种方案是利用蒸馏的方法学习一个密集的学生模型，另一种方案通过移除任务无关的专家或是合并专家进而使模型变为密集模型。</li>
+<li>Expert Models Merging：Branch-Train-Merge策略独立训练一组专家 LM (ELM)，每个专家 LM 都针对训练语料库中的特定领域量身定制，这些在没有共享参数的情况下运行的ELM可以在推理时集成或参数平均，以合并成一个模型。或是再引入一个门控函数选择激活的专家，而其他参数通过平均的方式进行合并。<br>
+<img src="https://zyf-815.github.io/post-images/1741766502393.png" alt="" loading="lazy"></li>
+</ol>
+<h1 id="系统设计">系统设计</h1>
+<p>下图展示了四种并行策略，(a)着重展示了专家并行的策略，即MoE层中的每个专家都被分配到不同的设备而不是和其他模块一样跨设备复制。专家并行主要有以下流程：门路由、输入编码、All-toAll调度、专家计算、All-to-All 组合和输出解码。输入编码用于将同一专家的输入标记聚合到连续的内存空间中，由来自门路由的令牌-专家映射确定。随后，All-to-All调度用于将输入标记发送到分布式设备中的相应专家。随后进行专家局部计算，最后执行之前的逆过程，All-to-All 组合和输出解码，根据门控索引重塑原始数据分布。(b,c,d)分别展示了张量并行、pipline并行的引入。<br>
+<img src="https://zyf-815.github.io/post-images/1741768781078.png" alt="" loading="lazy"></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a></li>
+<li><a href="#%E9%97%A8%E6%8E%A7%E5%87%BD%E6%95%B0">门控函数</a></li>
+<li><a href="#%E4%B8%93%E5%AE%B6">专家</a></li>
+<li><a href="#%E5%8F%82%E6%95%B0%E9%AB%98%E6%95%88%E7%9A%84%E4%B8%93%E5%AE%B6%E6%B7%B7%E5%90%88%E6%A8%A1%E5%9E%8B">参数高效的专家混合模型</a></li>
+<li><a href="#%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%8E%A8%E7%90%86%E6%96%B9%E6%A1%88">训练与推理方案</a></li>
+<li><a href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1">系统设计</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/mamba-xiang-guan-lun-wen/">
+              <h3 class="post-title">
+                Vision Mamba相关论文
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

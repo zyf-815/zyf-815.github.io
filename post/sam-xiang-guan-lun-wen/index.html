@@ -1,0 +1,313 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VIT相关论文 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="VIT相关论文 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="打算利用event模态以及SAM实现伪装物体检测，即利用event实现伪装物体定位作为SAM的prompt实现伪装物体检测，但由于仿真的event质量太低无法实现有效的检测导致任务失败。
+VIT backbone 相关论文
+DynamicV..." />
+    <meta name="keywords" content="2024总结" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              VIT相关论文
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-01-17
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="https://zyf-815.github.io/tag/dolbzKA-I7/" class="post-tag">
+                  # 2024总结
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>打算利用event模态以及SAM实现伪装物体检测，即利用event实现伪装物体定位作为SAM的prompt实现伪装物体检测，但由于仿真的event质量太低无法实现有效的检测导致任务失败。</p>
+<h1 id="vit-backbone-相关论文">VIT backbone 相关论文</h1>
+<h2 id="dynamicvit-efficient-vision-transformers-with-dynamic-token-sparsification">DynamicViT: Efficient Vision Transformers with Dynamic Token Sparsification</h2>
+<p>本文发现只有少部分token会影响模型结果，因此剔除部分token不会影响模型性能反而还会增强模型的运算效率。在我的任务中，由于event的空间稀疏性，过多的token可能还会影响模型性能。本文主要提出了一个预测模块来检测token的重要性。</p>
+<ul>
+<li>预测token重要性：</li>
+</ul>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>z</mi><mrow><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><mi>l</mi></mrow></msup><mo>=</mo><mi>M</mi><mi>L</mi><mi>P</mi><mo>(</mo><mi>x</mi><mo>)</mo><mspace linebreak="newline"></mspace><msup><mi>z</mi><mrow><mi>g</mi><mi>l</mi><mi>o</mi><mi>b</mi><mi>a</mi><mi>l</mi></mrow></msup><mo>=</mo><mi>A</mi><mi>g</mi><mi>g</mi><mo>(</mo><mi>M</mi><mi>L</mi><mi>P</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo separator="true">,</mo><mover accent="true"><mi>D</mi><mo>^</mo></mover><mo>)</mo><mspace linebreak="newline"></mspace><msub><mi>z</mi><mi>i</mi></msub><mo>=</mo><mo>[</mo><msubsup><mi>z</mi><mi>i</mi><mrow><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><mi>l</mi></mrow></msubsup><mo separator="true">,</mo><msup><mi>z</mi><mrow><mi>g</mi><mi>l</mi><mi>o</mi><mi>b</mi><mi>a</mi><mi>l</mi></mrow></msup><mo>]</mo><mspace linebreak="newline"></mspace><mi>π</mi><mo>=</mo><mi>S</mi><mi>o</mi><mi>f</mi><mi>t</mi><mi>m</mi><mi>a</mi><mi>x</mi><mo>(</mo><mi>M</mi><mi>L</mi><mi>P</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>)</mo><mspace linebreak="newline"></mspace></mrow><annotation encoding="application/x-tex">z^{local} = MLP(x) \\
+z^{global} = Agg(MLP(x),\hat{D}) \\
+z_i = [z_{i}^{local} , z^{global}] \\
+\pi = Softmax(MLP(z)) \\
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8991079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight">c</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault">L</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.8991079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.1130000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">g</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight">b</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.19677em;vertical-align:-0.25em;"></span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mord mathdefault" style="margin-right:0.03588em;">g</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault">L</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9467699999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.25233em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;">^</span></span></span></span></span></span><span class="mclose">)</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.04398em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.149108em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999998em;"><span style="top:-2.4530000000000003em;margin-left:-0.04398em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight">c</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.1130000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">g</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span><span class="mord mathdefault mtight">o</span><span class="mord mathdefault mtight">b</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight" style="margin-right:0.01968em;">l</span></span></span></span></span></span></span></span></span><span class="mclose">]</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03588em;">π</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mord mathdefault">t</span><span class="mord mathdefault">m</span><span class="mord mathdefault">a</span><span class="mord mathdefault">x</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault">L</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.04398em;">z</span><span class="mclose">)</span><span class="mclose">)</span></span><span class="mspace newline"></span></span></span></span></p>
+<ul>
+<li>训练阶段为了解决token预测可微，模型选择了Gumbel-Softmax。除此之外，剔除token后token数量发生了变化，不能简单的删除，也不能简单的置为0（因为同样会参与计算）。因此模型提出了一种掩码策略：具体来说通过G矩阵判断当前token是否与其他token计算注意力（当前token始终与自身计算注意力）。</li>
+</ul>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>P</mi><mo>=</mo><mi>Q</mi><msup><mi>K</mi><mi>T</mi></msup><mi mathvariant="normal">/</mi><msqrt><mi>C</mi></msqrt><mspace linebreak="newline"></mspace><msub><mi>G</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mrow><mo fence="true">{</mo><mtable><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mn>1</mn><mo separator="true">,</mo><mi>i</mi><mo>=</mo><mi>j</mi></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msub><mi>D</mi><mi>j</mi></msub><mo separator="true">,</mo><mi>i</mi><mi mathvariant="normal">≠</mi><mi>j</mi></mrow></mstyle></mtd></mtr></mtable></mrow><mspace linebreak="newline"></mspace><msub><mi>A</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><msub><mi>P</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>)</mo><msub><mi>G</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><mrow><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><msub><mi>P</mi><mrow><mi>i</mi><mi>k</mi></mrow></msub><mo>)</mo><msub><mi>G</mi><mrow><mi>i</mi><mi>k</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">P = QK^T / \sqrt{C} \\
+G_{ij} = \left\{
+\begin{matrix}
+ 1, i=j \\
+ D_j, i \neq j \\ 
+\end{matrix}
+\right. \\
+A_{ij} = \frac{exp(P_{ij})G_{ij}}{\sum _{k=1}^{N}exp(P_{ik})G_{ik}}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.22554em;vertical-align:-0.25em;"></span><span class="mord mathdefault">Q</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913309999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.13889em;">T</span></span></span></span></span></span></span></span><span class="mord">/</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9755400000000001em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord mathdefault" style="margin-right:0.07153em;">C</span></span></span><span style="top:-2.93554em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,
+-10,-9.5,-14c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54c44.2,-33.3,65.8,
+-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10s173,378,173,378c0.7,0,
+35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429c69,-144,104.5,-217.7,106.5,
+-221c5.3,-9.3,12,-14,20,-14H400000v40H845.2724s-225.272,467,-225.272,467
+s-235,486,-235,486c-2.7,4.7,-9,7,-19,7c-6,0,-10,-1,-12,-3s-194,-422,-194,-422
+s-65,47,-65,47z M834 80H400000v40H845z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.06445999999999996em;"><span></span></span></span></span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.40003em;vertical-align:-0.95003em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">{</span></span><span class="mord"><span class="mtable"><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.45em;"><span style="top:-3.61em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault" style="margin-right:0.05724em;">j</span></span></span><span style="top:-2.4099999999999997em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel"><span class="mrel"><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="rlap"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="inner"><span class="mrel"></span></span><span class="fix"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathdefault" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9500000000000004em;"><span></span></span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.597941em;vertical-align:-1.170941em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.128769em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.981231em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.10903em;">N</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">e</span><span class="mord mathdefault">x</span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="mord mathdefault">x</span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord"><span class="mord mathdefault">G</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.170941em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<h2 id="dino-dinov2">Dino &amp; Dinov2</h2>
+<p>Dino在计算机视觉领域设计了一种自监督的学习范式：无监督自蒸馏。通过裁剪等数据增强的方式获取同一图像的不同增强图像进行训练，并利用自蒸馏的方式要求学生模型向老师模型靠齐（通过学生模型学习局部或全局特征来对齐老师模型训练的全局特征，全局指裁剪面积大于整体面积的50%，局部指小于50%）。同时为了防止模式崩塌（不同输入导致相同结果），模型提出：1. 动量教师模型，学生模型通过反向传播更新参数，教师网络通过指数移动平均将学生网络学习到的模型参数更新给教师网络。2. 下图中的centering操作，为激活值添加一个偏置c，防止某一特征占主导地位。Dinov2提出了一个大规模的数据集，从大量未标注的数据中挑选了合适的数据，流程：1. 去重，计算不同图像的特征相似性，删除重复图像。2. 自监督图像检索，对图像特征进行聚类，然后从与查询图像所在的聚类中检索最相似的图像以获取与现有数据集相似的图像。<br>
+<img src="https://zyf-815.github.io/post-images/1740990207952.png" alt="" loading="lazy"></p>
+<h2 id="uniformerv2-unlocking-the-potential-of-image-vits-for-video-understanding">UniFormerV2: Unlocking the Potential of Image ViTs for Video Understanding</h2>
+<p>视频专用模型可以更无缝地转移到视频领域，但它们的独特架构需要重新进行图像预训练，从而限制了可扩展性。本文改造UniFormer使其适应VIT，能够利用VIT的预训练模型。为了充分考虑时间信号，文章提出了一个局部时间聚合和一个全局时间聚合模块。其中局部聚合模块不考虑空间信号，只考虑时序上的token。而全局聚合模块利用一个可学习的token学习全局的时序信号。<br>
+<img src="https://zyf-815.github.io/post-images/1737116464515.png" alt="" loading="lazy"><br>
+文章还探索了四种多特征融合方式，最后消融实验发现第一种方式效果较好。<br>
+<img src="https://zyf-815.github.io/post-images/1737116661466.png" alt="" loading="lazy"></p>
+<h1 id="提示学习相关论文">提示学习相关论文</h1>
+<h2 id="visual-prompt-tuning">Visual Prompt Tuning</h2>
+<p>提出了两种提示学习的架构，deep和shallow<br>
+<img src="https://zyf-815.github.io/post-images/1737173688187.png" alt="" loading="lazy"></p>
+<h2 id="explicit-visual-prompting-for-low-level-structure-segmentations">Explicit visual prompting for low-level structure segmentations</h2>
+<p>之前的提示学习方法都是数据无关的方法，本文主要见解是强制可调参数专注于每个单独图像的显式视觉内容（高频分量）<br>
+<img src="https://zyf-815.github.io/post-images/1737174344995.png" alt="" loading="lazy"></p>
+<h2 id="multi-prompt-with-depth-partitioned-cross-modal-learning">Multi-Prompt with Depth Partitioned Cross-Modal Learning</h2>
+<p>比较了四种提示学习的方法</p>
+<ul>
+<li>(a)(b)都是基于单提示的方法，无法提示类的不同属性或其他有用的环境信息。</li>
+<li>(c)由于不同提示没有明确的区分训练策略，导致模型容易简单的学习全局特征</li>
+<li>(d)迫使每个不同的提示学习不同层的视觉表示<br>
+<img src="https://zyf-815.github.io/post-images/1737185179017.png" alt="" loading="lazy"></li>
+</ul>
+<h2 id="maple-multi-modal-prompt-learning">MaPLe: Multi-modal Prompt Learning</h2>
+<p>现有的提示学习都是单模态的提示学习，即在文本端添加可学习的提示词，但文章发现这种方式不足以实现最优的文本与图像的对齐，因此文章设计了一种多模态提示学习的方法以增强模态耦合。<br>
+<img src="https://zyf-815.github.io/post-images/1737186372450.png" alt="" loading="lazy"></p>
+<h2 id="vision-transformer-adapter-for-dense-predictions">Vision Transformer Adapter for Dense Predictions</h2>
+<p>文章发现VIT在密集预测任务上的结果不好，过去的方法需要完全微调模型使VIT具备密集预测的能力，文章利用CNN设计了一个Adapter，充分获取了多尺度的特征并注入VIT中使模型具备密集预测的能力。<br>
+<img src="https://zyf-815.github.io/post-images/1737186706236.png" alt="" loading="lazy"></p>
+<h2 id="ez-clip-efficient-zeroshot-video-action-recognition">EZ-CLIP: Efficient Zeroshot Video Action Recognition</h2>
+<p>过去的方法需要重新训练网络以获取时序捕捉的能力(left)，本文提出的方法利用可学习的token捕获时序变化(right)<br>
+<img src="https://zyf-815.github.io/post-images/1737187373280.png" alt="" loading="lazy"></p>
+<h1 id="detr相关论文">DETR相关论文</h1>
+<p>DETR的优点是去除了人工设计如Anchors和nms，而一个缺点是学习很难收敛。DETR在检测过程中，通过100个可学习的tokens经过自注意力与交叉注意力得到100个候选，训练过程中通过根据匈牙利算法匹配GT中的物体。以下两篇论文介绍了DETR收敛慢的原因</p>
+<h2 id="rethinking-transformer-based-set-prediction-for-object-detection">Rethinking Transformer-based Set Prediction for Object Detection</h2>
+<p>归结的DETR收敛慢的原因</p>
+<ul>
+<li>在训练初期，模型的GT分配就是约等于随机分配的，这造成了早期训练时的不稳定性。但仅仅在前期加速了收敛。</li>
+<li>cross-attention导致了收敛慢。由于 cross-attention 是 decoder 中object queries从encoder获取目标信息的关键模块，但由于训练过程中query不能提供准确的位置定位以至于不能准确的提取图像特征。</li>
+</ul>
+<p>因此文章提出了一个剔除cross attention的网络架构<br>
+<img src="https://zyf-815.github.io/post-images/1737202786821.png" alt="" loading="lazy"></p>
+<h2 id="dab-detr-dynamic-anchor-boxes-are-better-queries-for-detr">DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR</h2>
+<p>详细介绍了Decoder中query的物理意义以及cross attention的作用</p>
+<ol>
+<li>类比encoder中的query，decoder中的query也包含两部分：0初始化的embedding提取图像特征，随机初始化的learnable queries提供位置信号。</li>
+<li>主要原因在于learnable queries没有显式地提供位置先验，既不像Anchor，也没有位置编码。</li>
+<li>因此，为了增强learnable queries的位置先验，对每个query引入x,y,w,h，使每个query负责不同的位置以及尺度。</li>
+<li>为了防止模型过拟合训练集的物体位置分布，文章对于x,y均匀分布于图像中并取消了反向传播</li>
+<li>基于Transformer的多层架构，模型在每一层后计算x,y,w,h的偏移量以更新位置信息。</li>
+<li>由于query包含了位置信号，因此cross attention的作用就类似了ROI pooling，只不过这种query的方式能够增强网络对周围特征的参考。基于cross attention类似于ROI pooling的作用，论文调整了位置编码中的温度系数（降低），使模型更加关注特定位置的局部区域。<br>
+<img src="https://zyf-815.github.io/post-images/1737203905691.png" alt="" loading="lazy"></li>
+</ol>
+<h1 id="sam相关论文">SAM相关论文</h1>
+<h2 id="segment-anything">Segment Anything</h2>
+<p>SAM的encoder为MAE训练的VIT，decoder的结构如下图所示：prompt包括稀疏（point box text）与稠密（mask）两种，点被表示为位置编码与学习到的特征的和；框由左上角和右下角两个点组成，mask通过卷积网络提取特征。<br>
+<img src="https://zyf-815.github.io/post-images/1737166900887.png" alt="" loading="lazy"></p>
+<h2 id="segment-anything-in-high-quality">Segment Anything in High Quality</h2>
+<p>在部分区域SAM的分割质量不高（边缘细节错误，分割区域错误），文章通过与早期的encoder中的VIT特征进行交互，学习一个高质量的输出token以实现高质量的分割。优势：没有修改SAM的架构，只是在SAM的基础上添加了一个全新的output token以及一个特征融合模块。HQ-output token与SAM的output token拼接在一起，同样包含了掩码的信息。而特征融合模块融合了encoder中的浅层特征（边缘）、深层特征（语义），以及decoder中的更新过掩码特征。最终HQ-output token与融合后的HQ-feature一起得到高质量的掩码输出。<br>
+<img src="https://zyf-815.github.io/post-images/1737168313898.png" alt="" loading="lazy"></p>
+<h2 id="maris-referring-image-segmentation-via-mutual-aware-attention-features">MARIS: Referring Image Segmentation via Mutual-Aware Attention Features</h2>
+<p>主要解决的问题：</p>
+<ol>
+<li>过去的方法仅考虑语言对视觉特征的引导，即通过语言增强视觉token中的相应的部分。忽略了视觉特征对语言特征的引导，通过视觉引导语言特征可以赋值不同的权重给表达式中的每个单词，并生成语言感知的视觉特征</li>
+<li>过去的mask decoder中主要包含了大量的视觉特征，导致模型容易检测显著性区域而不是文本指定的区域，因此本文利用语言特征引导了模型的decoder部分<br>
+<img src="https://zyf-815.github.io/post-images/1737171698032.png" alt="" loading="lazy"></li>
+</ol>
+<h2 id="geosam-fine-tuning-sam-with-sparse-and-dense-visual-prompting-for-automated-segmentation-of-mobility-infrastructure">GeoSAM: Fine-tuning SAM with Sparse and Dense Visual Prompting for Automated Segmentation of Mobility Infrastructure</h2>
+<p>利用一个预训练的CNN网络为SAM分别生成稀疏掩码（区分前景与背景）与稠密掩码<br>
+<img src="https://zyf-815.github.io/post-images/1737169825514.png" alt="" loading="lazy"></p>
+<h2 id="sam-fails-to-segment-anything-sam-adapter-adapting-sam-in-underperformed-scenes-camouflage-shadow-and-more">SAM Fails to Segment Anything? -SAM-Adapter: Adapting SAM in Underperformed Scenes: Camouflage, Shadow, and More</h2>
+<p>实验发现SAM在部分分割任务中的表现不佳，文章提出了一个Adapter，将特定的信息传入SAM的encoder中。特定的信号的可以是纹理、频域等。在代码中为频域特征<br>
+<img src="https://zyf-815.github.io/post-images/1737167530054.png" alt="" loading="lazy"></p>
+<h2 id="基于sam的视频分割segment-and-track-anything-和-track-anything-segment-anything-meets-videos">基于SAM的视频分割，Segment and Track Anything 和 Track Anything: Segment Anything Meets Videos</h2>
+<p>将SAM作为组件应用于视频分割中，SAM主要提供一个准确的分割。</p>
+<h2 id="self-prompting-large-vision-models-for-few-shot-medical-image-segmentation">Self-Prompting Large Vision Models for Few-Shot Medical Image Segmentation</h2>
+<p>利用SAM的特征自我提示，即利用SAM的encoder特征生成粗掩码，然后根据粗掩码生成box与point的稀疏prompt作为decoder的prompt输入。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#vit-backbone-%E7%9B%B8%E5%85%B3%E8%AE%BA%E6%96%87">VIT backbone 相关论文</a>
+<ul>
+<li><a href="#dynamicvit-efficient-vision-transformers-with-dynamic-token-sparsification">DynamicViT: Efficient Vision Transformers with Dynamic Token Sparsification</a></li>
+<li><a href="#dino-dinov2">Dino &amp; Dinov2</a></li>
+<li><a href="#uniformerv2-unlocking-the-potential-of-image-vits-for-video-understanding">UniFormerV2: Unlocking the Potential of Image ViTs for Video Understanding</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8F%90%E7%A4%BA%E5%AD%A6%E4%B9%A0%E7%9B%B8%E5%85%B3%E8%AE%BA%E6%96%87">提示学习相关论文</a>
+<ul>
+<li><a href="#visual-prompt-tuning">Visual Prompt Tuning</a></li>
+<li><a href="#explicit-visual-prompting-for-low-level-structure-segmentations">Explicit visual prompting for low-level structure segmentations</a></li>
+<li><a href="#multi-prompt-with-depth-partitioned-cross-modal-learning">Multi-Prompt with Depth Partitioned Cross-Modal Learning</a></li>
+<li><a href="#maple-multi-modal-prompt-learning">MaPLe: Multi-modal Prompt Learning</a></li>
+<li><a href="#vision-transformer-adapter-for-dense-predictions">Vision Transformer Adapter for Dense Predictions</a></li>
+<li><a href="#ez-clip-efficient-zeroshot-video-action-recognition">EZ-CLIP: Efficient Zeroshot Video Action Recognition</a></li>
+</ul>
+</li>
+<li><a href="#detr%E7%9B%B8%E5%85%B3%E8%AE%BA%E6%96%87">DETR相关论文</a>
+<ul>
+<li><a href="#rethinking-transformer-based-set-prediction-for-object-detection">Rethinking Transformer-based Set Prediction for Object Detection</a></li>
+<li><a href="#dab-detr-dynamic-anchor-boxes-are-better-queries-for-detr">DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR</a></li>
+</ul>
+</li>
+<li><a href="#sam%E7%9B%B8%E5%85%B3%E8%AE%BA%E6%96%87">SAM相关论文</a>
+<ul>
+<li><a href="#segment-anything">Segment Anything</a></li>
+<li><a href="#segment-anything-in-high-quality">Segment Anything in High Quality</a></li>
+<li><a href="#maris-referring-image-segmentation-via-mutual-aware-attention-features">MARIS: Referring Image Segmentation via Mutual-Aware Attention Features</a></li>
+<li><a href="#geosam-fine-tuning-sam-with-sparse-and-dense-visual-prompting-for-automated-segmentation-of-mobility-infrastructure">GeoSAM: Fine-tuning SAM with Sparse and Dense Visual Prompting for Automated Segmentation of Mobility Infrastructure</a></li>
+<li><a href="#sam-fails-to-segment-anything-sam-adapter-adapting-sam-in-underperformed-scenes-camouflage-shadow-and-more">SAM Fails to Segment Anything? -SAM-Adapter: Adapting SAM in Underperformed Scenes: Camouflage, Shadow, and More</a></li>
+<li><a href="#%E5%9F%BA%E4%BA%8Esam%E7%9A%84%E8%A7%86%E9%A2%91%E5%88%86%E5%89%B2segment-and-track-anything-%E5%92%8C-track-anything-segment-anything-meets-videos">基于SAM的视频分割，Segment and Track Anything 和 Track Anything: Segment Anything Meets Videos</a></li>
+<li><a href="#self-prompting-large-vision-models-for-few-shot-medical-image-segmentation">Self-Prompting Large Vision Models for Few-Shot Medical Image Segmentation</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/wei-zhuang-wu-ti-jian-ce/">
+              <h3 class="post-title">
+                伪装物体检测
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

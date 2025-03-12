@@ -1,0 +1,212 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vision Mamba相关论文 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Vision Mamba相关论文 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Vision Mamba的发展
+对于CNN和Transformer，Mamba具有全局感受野且属于线性复杂度。但是，Mamba的任务在视觉任务中存在以下问题：
+
+伪影，论文Mamba-r: Vision Mamba ALSO Needs R..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Vision Mamba相关论文
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-02-28
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="vision-mamba的发展">Vision Mamba的发展</h1>
+<p>对于CNN和Transformer，Mamba具有全局感受野且属于线性复杂度。但是，Mamba的任务在视觉任务中存在以下问题：</p>
+<ol>
+<li>伪影，论文Mamba-r: Vision Mamba ALSO Needs Registers发现Mamba存在与Transformer一样的伪影问题，即背景token得到了较大的激活值且包含了全局信号，影响了特征的传播。</li>
+<li>在全局与局部建模的局限性，原始Mamba的单方向的扫描机制会适合因果信号，但是视觉输入属于非因果信号，限制了全局与局部信号的表达</li>
+</ol>
+<h2 id="解决伪影问题mamba-r-vision-mamba-also-needs-registers">解决伪影问题：Mamba-r: Vision Mamba ALSO Needs Registers</h2>
+<p>如下左图所示，ViM中的背景token具有较大的激活值，导致模型无法显著区分前景与背景影响特征的传播。一些基于Transformer的相关论文发现，使用注册方法（引入额外的输入无关的token）能够显著减少伪影。基于此，文章为Mamba提出了注册方法。与Transformer不同在于：1.Transformer通常在一侧引入注册token，考虑到Mamba扫描的方向性，文章采用均匀插入的方法，使模型能够学习不同位置的感兴趣区域。2. 文章发现注册token能够有效的表达全局范围的特征，因此加以利用注册token<br>
+<img src="https://zyf-815.github.io/post-images/1740732738928.png" alt="" loading="lazy"></p>
+<h2 id="解决全局与局部建模限制是模型适应非因果数据">解决全局与局部建模限制（是模型适应非因果数据）</h2>
+<h3 id="改进扫描策略">改进扫描策略</h3>
+<p>常见的扫描方法如下图所示，包括了sweeping scan, continues scan以及local scan。continues解决了sweeping方法导致的token不连续的问题，local的方法增强了局部建模能力。除了这些方法之外，EfficientVMamba参考了空洞卷积的思想设计了空洞扫描策略（跳跃式的扫描）。这些扫描方式通过引入不同的扫描方向以减弱SSM的因果属性，但这些方法都属于人工设计，缺少了针对输入数据的灵活性。Spatial-Mamba: Effective Visual State Space Models via Structure-Aware State Fusion通过在扫描后引入扩张卷积使模型能够学习空间对应关系，但是文章依然基于SSD的顺序扫描方法。DAMamba: Vision State Space Model with Dynamic Adaptive Scan更进一步，参考可变形注意力的方法，学习感兴趣的位置以调整token的位置，使扫描变得依赖于输入数据。除此之外，HI-MAMBA: HIERARCHICAL MAMBA FOR EFFICIENTIMAGE SUPER-RESOLUTION在扫描中引入了多尺度的方法，local流即原来的SSD和region流通过池化层缩小空间尺度后进行SSD。该方法本质上还是增强了局部建模。<br>
+<img src="https://zyf-815.github.io/post-images/1740733417715.png" alt="" loading="lazy"><br>
+<img src="https://zyf-815.github.io/post-images/1740734022404.png" alt="" loading="lazy"></p>
+<h3 id="引入额外的分支">引入额外的分支</h3>
+<p>Deformable Mamba for Wide Field of View Segmentation &amp; Deform-Mamba Network for MRI Super-Resolution在Mamba网络的基础上引入了一个额外的分支，即对特征图应用可变形卷积，目的在于增强网络的局部建模能力。A Lightweight and Effective Image Tampering Localization Network with Vision Mamba同样引入了一个额外的分支，不过本文引入的分支属于任务相关的分支，即利用预训练的网络提取对任务有帮助的特征。除此之外，本文为了保证计算的高效性选择在decoder处而不是encoder进行融合，并且设计轻量化的decoder（线性层与上采样）</p>
+<h2 id="mamba高效化">Mamba高效化</h2>
+<p>HI-MAMBA: HIERARCHICAL MAMBA FOR EFFICIENTIMAGE SUPER-RESOLUTION发现过去利用扫描策略的方法导致计算复杂度上升（多方向），基于此文章采用级联的方式轮流选择不同的扫描策略，减少计算复杂度。Famba-V: Fast Vision Mamba with Cross-Layer Token Fusion：通过融合token实现高效计算，根据输入标记序列的偶数和奇数索引将输入标记序列分为两组，然后通过余弦相似度查找相似度最高的r组进行融合，考虑到融合导致的信息丢失，同时文章提出了三种融合策略（交替融合、浅层融合、深层融合）EfficientViM: Efficient Vision Mamba with Hidden State Mixer based State Space Duality：修改了Mamba的计算过程，将特征传播过程转移到了隐藏状态</p>
+<h2 id="其他改进">其他改进</h2>
+<p>PlainMamba: Improving Non-Hierarchical Mamba in Visual Recognition：提出了一个简单模型，即保持了空间维度的不变（优点：简单，复用性强）。除此之外，引入了五个可学习的token表示方向（上下左右以及begin）使模型能够更好的处理空间关系</p>
+<h2 id="多模态mamba">多模态Mamba</h2>
+<ol>
+<li>Pan-Mamba: Effective pan-sharpening with State Space Model &amp; MambaDFuse: A Mamba-based Dual-phase Model for Multi-modality Image Fusion &amp; CFMW: Cross-modality Fusion Mamba for Multispectral Object Detection under Adverse Weather Conditions三篇论文提出了基本相同的多模态融合方式，通过主模态的计算gate控制不同模态的SSM结果最后相加融合不同模态的特征，这些方法除了利用Mamba进行融合，文章还利用通道交换实现特征交互。<br>
+<img src="https://zyf-815.github.io/post-images/1740734931687.png" alt="" loading="lazy"></li>
+<li>Coupled Mamba: Enhanced Multi-modal Fusion with Coupled State Space Model：多模态融合的本质在于利用不同模态固有的互补信息，与之前论文不同是本文在SSM传播的过程中进行特征融合，即当前状态取决于其自身链的状态和前一个时间步的相邻链的状态。优势：即保留了特征传播的独立性同时保证了模态交互<br>
+<img src="https://zyf-815.github.io/post-images/1740735249267.png" alt="" loading="lazy"></li>
+<li>ML-Mamba: Efficient Multi-Modal Large Language Model Utilizing Mamba-2 &amp; Cobra: Extending Mamba to Multi-Modal Large Language Model for Efficient Inference 利用Mamba代替Transformer实现大模型的训练<br>
+<img src="https://zyf-815.github.io/post-images/1740735309432.png" alt="" loading="lazy"></li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#vision-mamba%E7%9A%84%E5%8F%91%E5%B1%95">Vision Mamba的发展</a>
+<ul>
+<li><a href="#%E8%A7%A3%E5%86%B3%E4%BC%AA%E5%BD%B1%E9%97%AE%E9%A2%98mamba-r-vision-mamba-also-needs-registers">解决伪影问题：Mamba-r: Vision Mamba ALSO Needs Registers</a></li>
+<li><a href="#%E8%A7%A3%E5%86%B3%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E5%BB%BA%E6%A8%A1%E9%99%90%E5%88%B6%E6%98%AF%E6%A8%A1%E5%9E%8B%E9%80%82%E5%BA%94%E9%9D%9E%E5%9B%A0%E6%9E%9C%E6%95%B0%E6%8D%AE">解决全局与局部建模限制（是模型适应非因果数据）</a>
+<ul>
+<li><a href="#%E6%94%B9%E8%BF%9B%E6%89%AB%E6%8F%8F%E7%AD%96%E7%95%A5">改进扫描策略</a></li>
+<li><a href="#%E5%BC%95%E5%85%A5%E9%A2%9D%E5%A4%96%E7%9A%84%E5%88%86%E6%94%AF">引入额外的分支</a></li>
+</ul>
+</li>
+<li><a href="#mamba%E9%AB%98%E6%95%88%E5%8C%96">Mamba高效化</a></li>
+<li><a href="#%E5%85%B6%E4%BB%96%E6%94%B9%E8%BF%9B">其他改进</a></li>
+<li><a href="#%E5%A4%9A%E6%A8%A1%E6%80%81mamba">多模态Mamba</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/kuo-san-mo-xing-xiang-guan/">
+              <h3 class="post-title">
+                扩散模型相关
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

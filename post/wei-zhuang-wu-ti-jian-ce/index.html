@@ -1,0 +1,200 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>伪装物体检测 | Gridea</title>
+<link rel="shortcut icon" href="https://zyf-815.github.io/favicon.ico?v=1741780044991">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://zyf-815.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="伪装物体检测 | Gridea - Atom Feed" href="https://zyf-815.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="图片伪装物体检测
+Advances in Deep Concealed Scene Understanding介绍了伪装物体检测任务的发展脉络，文章总结了伪装物体检测总共有三种范式：
+
+多输入单输出的多流网络，一般可以将输入额外转化为深度、..." />
+    <meta name="keywords" content="2024总结" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://zyf-815.github.io">
+  <img class="avatar" src="https://zyf-815.github.io/images/avatar.png?v=1741780044991" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              伪装物体检测
+            </h2>
+            <div class="post-info">
+              <span>
+                2025-01-17
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://zyf-815.github.io/tag/dolbzKA-I7/" class="post-tag">
+                  # 2024总结
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="图片伪装物体检测">图片伪装物体检测</h1>
+<p>Advances in Deep Concealed Scene Understanding介绍了伪装物体检测任务的发展脉络，文章总结了伪装物体检测总共有三种范式：</p>
+<ul>
+<li>多输入单输出的多流网络，一般可以将输入额外转化为深度、边缘、频域等，除此之外还可以放大缩小图片以显式的关注多尺度信息。</li>
+<li>自底向上和自顶向下的多尺度网络，利用深层语义特征增强浅层特征</li>
+<li>单输入多输出的分支网络，辅助任务通常可以选择边缘、深度等。<br>
+<img src="https://zyf-815.github.io/post-images/1737075785348.png" alt="" loading="lazy"></li>
+</ul>
+<p>针对第一种范式，ZoomNeXt: A Unified Collaborative Pyramid Network for Camouflaged Object Detection在输入时候引入了0.5和1.5倍的分辨率输入，以实现不同尺度伪装物体的准确预测。主要流程为多分辨率特征提取——特征融合（包括了多分辨率输入特征的融合，以及多尺度特征的融合，主要利用了通道分组的技术，类似多头的设计）——结果预测。最后，文章提出了一个辅助的损失函数以增强边缘的锐利程度，即定义像素 x 的歧义度量，它在 x = 0.5 处最大化，并在 x = 0 或 x = 1 处最小化。</p>
+<p>针对第二种范式，文章的出发点主要基于先大致定位伪装物体再实现了准确的分割，如论文FSNet: Focus Scanning Network for Camouflaged Object Detection和Concealed Object Detection 两篇论文均利用深层语义特征生成一个感兴趣区域或是Coarse Map，并以此辅助模型在解码器部分实现准确的分割。用到的一些技术包括：多尺度卷积核并行以实现尺度的自适应，通道的split。除此之外，<br>
+Feature Shrinkage Pyramid for Camouflaged Object Detection with Transformers利用Transformer架构实现了伪装物体检测，主要解决了局部特征建模效果较差以及传统的特征聚合直接将底层特征与语义特征融合容易引入噪声。因此文章提出了一个token增强模块利用相邻的token增强token的局部表达能力并设计了金字塔结构的特征聚合模块逐步的聚合相邻token。</p>
+<p>针对第三种范式，Camouflaged Object Detection with Feature Decomposition and Edge Reconstruction同时进行边缘检测与伪装物体检测以增强边缘恢复能力。除此之外，文章利用了小波变换将特征分为不同的频域，分别处理高频（边缘纹理）与低频信号（颜色光照）</p>
+<h1 id="视频伪装物体检测">视频伪装物体检测</h1>
+<h2 id="implicit-motion-handling-for-video-camouflaged-object-detection">Implicit Motion Handling for Video Camouflaged Object Detection</h2>
+<p>过去的方法一般基于光流估计实现运动线索的建模，然而，在检测伪装对象时，对象边界往往是模糊的，视频中光流和运动线索的估计不准确，而这种不准确会影响影响性能进而导致误差的累积，因此文章隐式的学习运动线索。模型主要为两阶段的检测，第一阶段结合上下帧实现局部的时序感知，第二阶段实现长时序的建模。对于第一阶段的短时序建模，直接拼接上下帧的特征来实现特征位移的估计（共享了encoder）。对于第二阶段的长时序建模，网络参考了Transformer的seq-to-seq架构，利用注意力机制建模长时序。<br>
+<img src="https://zyf-815.github.io/post-images/1737082071435.png" alt="" loading="lazy"><br>
+<img src="https://zyf-815.github.io/post-images/1737082076808.png" alt="" loading="lazy"></p>
+<h2 id="tokenmotion-motion-guided-vision-transformer-for-video-camouflaged-object-detection-via-learnable-token-selection">TokenMotion: Motion-Guided Vision Transformer for Video Camouflaged Object Detection Via Learnable Token Selection</h2>
+<p>四页的短文，直接对比Implicit Motion Handling for Video Camouflaged Object Detection论文，指出其缺点。前文的解码器是独立的，因此上下文的分割噪声容易导致误差的累积，本文直接共享encoder和decoder；前文第二阶段的长时序可能导致不同场景的混合，过长的时序可能引入大量噪声，因此本文只利用上下文的时序信号。除此之外，文章提出了token选择模块来选择重要的token并忽略不重要的token(专注于运动变化)<br>
+<img src="https://zyf-815.github.io/post-images/1737082670507.png" alt="" loading="lazy"></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%9B%BE%E7%89%87%E4%BC%AA%E8%A3%85%E7%89%A9%E4%BD%93%E6%A3%80%E6%B5%8B">图片伪装物体检测</a></li>
+<li><a href="#%E8%A7%86%E9%A2%91%E4%BC%AA%E8%A3%85%E7%89%A9%E4%BD%93%E6%A3%80%E6%B5%8B">视频伪装物体检测</a>
+<ul>
+<li><a href="#implicit-motion-handling-for-video-camouflaged-object-detection">Implicit Motion Handling for Video Camouflaged Object Detection</a></li>
+<li><a href="#tokenmotion-motion-guided-vision-transformer-for-video-camouflaged-object-detection-via-learnable-token-selection">TokenMotion: Motion-Guided Vision Transformer for Video Camouflaged Object Detection Via Learnable Token Selection</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://zyf-815.github.io/post/tong-dao-jiao-huan-yu-gui-yi-hua/">
+              <h3 class="post-title">
+                通道交换与归一化
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://zyf-815.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
